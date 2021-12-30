@@ -10,8 +10,7 @@ This repo contains the scripts and notebooks to reproduce the analysis from Chav
 - Contains raw AmericanGut dataset
 
 ### Figure 1. PRISMA flow chart and cohort demographics
-- Preprocessing of Amergican Gut data, propensity scoring matching, and feature distributions (amgut_processing_distributions.ipynb)
-- Extended Data Figure 1. Comparison of ASD and control demographics from data compiled from the American gut project
+- Extended Data Figure 1. Comparison of ASD and control demographics from data compiled from the American gut project (amgut_processing_distributions.ipynb)
 
 ### Figure 2. Association of ASD status to microbiome alpha and beta-diversity
 - Extended Data Figure 2. Principal coordinate analysis of samples by status
