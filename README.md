@@ -6,8 +6,6 @@ This repo contains the scripts and notebooks to reproduce the analysis from Chav
 
 ## Outline of Directories
 
-### utils. Contains the relevant utility functions and classes
-
 ### Data. Contains the relevant data and metadata
 - Contains raw AmericanGut dataset
 
@@ -42,3 +40,4 @@ This repo contains the scripts and notebooks to reproduce the analysis from Chav
 - Supplementary Figure 11. Effects of control type on ASD/NT order abundance
 - Supplementary Figure 12. Effects of control type on ASD/NT genus abundance
 
+### utils. Contains the relevant utility functions and classes
