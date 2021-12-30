@@ -5,11 +5,14 @@ Meta-analysis of 16S microbiome studies for Autism Spectrum Disorder
 This repo contains the scripts and notebooks to reproduce the analysis from Chavira 2022 (in prep).
 
 ## Outline of Directories
+
+### utils. Contains the relevant utility functions and classes
+
 ### Data. Contains the relevant data and metadata
 - Contains raw AmericanGut dataset
 
-
 ### Figure 1. PRISMA flow chart and cohort demographics
+- Preprocessing of Amergican Gut data, propensity scoring matching, and feature distributions (amgut_processing_distributions.ipynb)
 - Extended Data Figure 1. Comparison of ASD and control demographics from data compiled from the American gut project
 
 ### Figure 2. Association of ASD status to microbiome alpha and beta-diversity
