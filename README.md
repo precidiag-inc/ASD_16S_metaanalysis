@@ -38,3 +38,5 @@ This repo contains the scripts and notebooks to reproduce the analysis from Chav
 
 ### data
 ### utils
+
+Note. Please add the relevant data to the data directory
