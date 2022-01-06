@@ -1,0 +1,91 @@
+---
+title: "Alpha Diversity Boxplots"
+author: "Chavira 2022 (in prep)"
+Primary authors: Aries Chavira, Robert Mills, and Eric Hou-Jen Wang (Precidiag Inc. 2021)"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Load necessary packages 
+```{r, warning = FALSE, message = FALSE}
+library(tidyverse)
+library(dplyr)
+library(ggrepel)
+library(gcookbook)
+library("RColorBrewer")
+library(reshape2)
+library("wesanderson")
+library("ggpubr")
+library(gridExtra)
+library(viridis)
+library("hrbrthemes")
+library(extrafont)
+library(ggplot2)
+library(plyr)
+```
+
+
+## Plot figure 2c
+```{r}
+### Load data
+pseudof = read_delim("~/Desktop/ASD/all/Psuedo_F_analysis.txt","\t", escape_double = FALSE, trim_ws = TRUE)
+
+### Format data
+melted_beta <- melt(pseudof,id.vars=c('Study',"Unweighted_pval", "Weighted_pval"), measure.vars=c("Unweighted_F_statistic", "Weighted_F_statistic", "Unweighted_pval", "Weighted_pval"))
+
+melted_beta <- dplyr::rename(melted_beta, "Beta_Diversity_Metric" = "variable")
+melted_beta <- dplyr::rename(melted_beta, "F_statistic" = "value")
+melted_beta <- melted_beta %>% group_by(Study)
+melted_beta_2 <- melt(melted_beta,id.vars=c('Study',"Beta_Diversity_Metric", "F_statistic"), measure.vars=c("Unweighted_pval", "Weighted_pval"))
+write.csv(melted_beta_2,"~/Desktop/ASD/all/melted_beta_2.csv", row.names = FALSE)
+
+melted_beta_3 = read_delim("~/Desktop/ASD/all/melted_beta_2.txt","\t", escape_double = FALSE, trim_ws = TRUE)
+```
+
+```{r}
+# Define significance opacity for barplot
+alpha <- ifelse(melted_beta_2$value <0.05 , 0.2, 0.9)
+
+F_stat_plot <- ggplot(melted_beta_3, aes(fill=Beta_Diversity_Metric, y=F_statistic, x=Study)) +
+    geom_bar(position="dodge", stat="identity", alpha=ifelse(melted_beta_3$value <0.05 , 0.8, 0.2),legend = TRUE) +
+    scale_fill_manual(values= c("#DE3A37", "#666766")) +
+    scale_alpha(range=c(0.5,1)) + 
+    coord_flip() 
+
+F_stat_plot
+#ggsave("~/Desktop/ASD/PDFS/F_stat_plot.pdf", plot = F_stat_plot, width = 7, height = 5, device = "pdf")
+```
+
+## Plot figure 2d
+```{r, warning = FALSE, message = FALSE}
+### Load data
+per_study_alpha_values <- read_delim("~/Desktop/ASD/all/Finalized_notebooks_for_github/per_study_alpha_diversity_log2fc.txt", "\t", escape_double = FALSE, trim_ws = TRUE)
+```
+
+```{r, warning = FALSE, message = FALSE}
+Alpha_diversity_line_plot_2 <- ggboxplot(per_study_alpha_values, "Alpha_diversity_metric", "Log2(ASD/Control)", 
+                               ylab = "log2 Fold Change", 
+                               title = "Log2 Fold Change of Alpha Diversity \n in ASD vs Control by Cohort", 
+                               bxp.errorbar = TRUE, outlier.shape = NA) +
+  geom_boxplot(lwd=0.5, fatten = 0.5) +
+  geom_point(data = per_study_alpha_values, 
+             aes(x = Alpha_diversity_metric, y = `Log2(ASD/Control)`, colour = Study, group = Alpha_diversity_metric), 
+             position = position_jitter(width = 0.2), 
+             size= ifelse(per_study_alpha_values$Significant =="Significant",4, 2.5), stroke = 0) +
+  scale_color_manual(values = c("#741b47", "#1F78B4", "#B2DF8A", "#33A02C", "#2F4F4F", "#E31A1C", "#B15928",
+                              "#FDBF6F", "#FF7F00", "#00AFBB", "#6A3D9A", "#293352", "#FB9A99", "#FB9A10", "#CAB2D6")) +
+  theme(plot.title = element_text(hjust = 0.5)) + 
+  theme(text=element_text(size=14)) + theme_grey() + coord_flip() + 
+  guides(colour = guide_legend(override.aes = list(size=3))) 
+
+Alpha_diversity_line_plot_2
+ggsave("~/Desktop/ASD/PDFS/Alpha_diversity_line_plot_2.pdf", plot = Alpha_diversity_line_plot_2, width = 7, height = 4, device = "pdf")
+```
+
+
+
