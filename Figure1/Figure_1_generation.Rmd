@@ -1,0 +1,129 @@
+---
+title: "Figure_1"
+author: "Aries Chavira"
+date: "1/5/2022"
+output:
+  html_document: default
+  pdf_document: default
+---
+# Code to generate Figure 1b-f
+
+```{r setup, include=FALSE, message=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#### Load dependencies
+```{r}
+library(ggrepel)
+library(gcookbook)
+library("RColorBrewer")
+library(reshape2)
+library("wesanderson")
+library("ggpubr")
+library(gridExtra)
+library(tidyverse)
+library(viridis)
+library("hrbrthemes")
+library(gapminder)
+library(ggplot2)
+library(extrafont)
+library(ggthemes)
+```
+
+##### Load metadata files
+```{r, message=FALSE}
+Master_complete_metadata <- read_delim("~/Desktop/ASD/all/Metadata/Master_complete_metadata.txt", "\t", escape_double = FALSE, trim_ws = TRUE)
+ground_truth <- read_delim("~/Desktop/ASD/all/Metadata/ground_truth.txt", "\t", escape_double = FALSE, trim_ws = TRUE)
+```
+
+##### Figure 1b
+```{r, message=FALSE}
+# Remove NA's
+ground_truth_no_Nas <- ground_truth[!is.na(ground_truth$Status),] 
+
+#Plot Pannel b
+ASD_Control_count <- ggplot(data = ground_truth_no_Nas, aes(x = fct_rev(fct_infreq(Study)), fill = Status)) +
+    geom_bar() +
+    ggtitle("Cohort Size") +
+    xlab("Study") +
+    theme(plot.title = element_text(size = 16, hjust = 0.5)) + coord_flip() +
+    labs(tag = "b") + theme(plot.tag = element_text(face = "bold")) +
+  scale_fill_manual(values = c("#CE3534","#C57B7B", "#BCB4AD", "#666766")) 
+
+ASD_Control_count
+#ggsave("~/Desktop/ASD/PDFS/ASD_Control_count.pdf", plot = ASD_Control_count, width = 8, height = 6, device = cairo_pdf)
+```
+##### Figure 1c
+```{r, message=FALSE}
+ground_truth$Sex <- gsub("Unknown", "unknown", ground_truth$Sex) # Fix unknown notation in metadata
+ground_truth_no_Nas <- ground_truth[!is.na(ground_truth$Sex),] # Remove NA's 
+
+ASD_gender_dist <- ggplot(data = ground_truth_no_Nas, aes(x = fct_rev(fct_infreq(Study)), fill = Sex)) +
+    geom_bar() +
+    xlab("Study") +
+    ggtitle("Gender Distribution") +
+    theme(plot.title = element_text(size = 16, hjust = 0.5)) +
+    labs(tag = "c") + theme(plot.tag = element_text(face = "bold")) + coord_flip() +
+  scale_fill_manual(values = c("#666766","#CE3534","#2178B4")) + theme(text=element_text(size=14))
+
+ASD_gender_dist
+#ggsave("~/Desktop/ASD/PDFS/ASD_gender_dist.pdf", plot = ASD_gender_dist, width = 8, height = 6, device = cairo_pdf)
+```
+##### Figure 1d
+```{r, message=FALSE}
+density <- ggplot(Master_complete_metadata, aes(x=Age, color=Study)) +
+  geom_density(size=1, adjust = 2) +
+  scale_x_continuous(breaks = c(0.0, 5.0, 10.0, 15.0, 20.0, 40.0, 60.0, 80.0)) +
+  scale_color_manual(values = c("#B15928", "#00AFBB", "#1F78B4", "#B2DF8A", "#33A02C", "#FB9A99", "#E31A1C", 
+                                "#FDBF6F", "#FF7F00", "#CAB2D6", "#6A3D9A", "#FFFF99", "deeppink", "#293352")) +
+  labs(tag = "d") + theme(plot.tag = element_text(face = "bold")) + ggtitle("Age Distribution of \n Included Samples") + theme(plot.title = element_text(size = 16, hjust = 0.5))
+
+print(density)
+#ggsave("~/Desktop/ASD/PDFS/density.pdf", plot = density, width = 8, height = 6, device = cairo_pdf)
+```
+
+##### Figure 1e
+```{r, message=FALSE}
+Master_complete_metadata_no_Nas <- Master_complete_metadata[!is.na(Master_complete_metadata$Country),]
+
+ground_truth$Variable_Region <- gsub("V3-V4", "V3V4", ground_truth$Variable_Region) # Fix notation in metadata
+hypervariable_country <- ggplot(data = ground_truth, aes(x = fct_rev(fct_infreq(country)), fill = Variable_Region)) +
+    geom_bar() + 
+    ggtitle("Cohort Location") +
+    xlab("Country") +
+    labs(tag = "e") + theme(plot.tag = element_text(face = "bold")) + coord_flip() +
+  scale_fill_manual(values = c("#2178B4","#666766","#CE3534")) + theme(text=element_text(size=14))
+
+print(hypervariable_country)
+#ggsave("~/Desktop/ASD/PDFS/hypervariable_country.pdf", plot = hypervariable_country, width = 8, height = 6, device = cairo_pdf)
+```
+
+##### Figure 1f
+```{r, message=FALSE}
+ground_truth_no_Nas <- ground_truth[!is.na(ground_truth$Control_Type),] # Remove NA's 
+
+Cohort_type <- ggplot(data = ground_truth_no_Nas, aes(x = fct_rev(fct_infreq(Control_Type)), fill = Variable_Region)) +
+    geom_bar() +
+    ggtitle("Control Types") +
+    xlab("Country") +
+    labs(tag = "f") + theme(plot.tag = element_text(face = "bold")) + coord_flip() +
+  scale_fill_manual(values = c("#2178B4","#666766","#CE3534")) + theme(text=element_text(size=14))
+
+print(Cohort_type)
+#ggsave("~/Desktop/ASD/PDFS/Cohort_type.pdf", plot = Cohort_type, width = 8, height = 6, device = cairo_pdf)
+```
+
+
+```{r, message=FALSE}
+Statistics <- ggarrange(ASD_Control_count, ASD_gender_dist, ncol=2, nrow=1, common.legend = F, legend="right")
+
+print(Statistics)
+#ggsave("~/Desktop/ASD/PDFS/Statistics.pdf", plot = Statistics, width = 10, height = 4, device = cairo_pdf)
+```
+
+```{r, message=FALSE}
+Statistics_2 <- ggarrange(Cohort_type, hypervariable_country, ncol=1, nrow=2, common.legend = T, legend="right")
+
+print(Statistics_2)
+#ggsave("~/Desktop/ASD/PDFS/Statistics_2.pdf", plot = Statistics_2, width = 5, height = 4, device = cairo_pdf)
+```
