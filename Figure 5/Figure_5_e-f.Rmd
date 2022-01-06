@@ -1,0 +1,85 @@
+---
+title: "Machine_learning_covariate_analysis_figure"
+author: "Aries Chavira"
+date: "12/21/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+#Load dependencies
+library(ggplot2)
+library(tidyverse)
+library("RColorBrewer")
+library(reshape2)
+library("ggpubr")
+library(gridExtra)
+library(viridis)
+library("hrbrthemes")
+library(extrafont)
+library(plotly)
+```
+
+```{r}
+# Load machine larning results for each covariate
+ml_metrics <- read_delim("~/Downloads/metadata_metrics.txt", "\t", escape_double = FALSE, trim_ws = TRUE)
+ml_metrics
+
+# Separate for technical effects and demographic effects  
+technical_effects <- subset(ml_metrics, (variable %in% c("Variable_Region","seq_depth_range")))
+dem_effect <- subset(ml_metrics, (variable %in% c("Country","Sex","Control_relation")))
+```
+
+
+```{r}
+technical_effects$metric = factor(technical_effects$metric , levels=c("F1 Score", "Accuracy", "AUC"))
+technical_effects$value = factor(technical_effects$value , levels=c("< 6000", "> 14000", "V1V2", "V4", "V3V4"))
+
+technical_effects_plot_2 <- ggplot(technical_effects, aes(x=metric, y=average, fill=value)) + 
+    geom_bar( aes(x = metric, fill = value), alpha = 0.9, position=position_dodge(), stat="identity",
+             size=.3, width=0.5) +      # Thinner lines
+      facet_grid(~variable) +
+  geom_errorbar(aes(ymin=average-sem, ymax=average+sem),
+                  size=.45,    # Thinner lines
+                  width=.2,
+                  position=position_dodge(.5)) +
+    scale_fill_manual(values = c("#FDBF6E", "#446455", "#FDBF6E", "#9BB2AF", "#446455")) + #"#FF7F00","#BCB4AD"
+    xlab("Machine Learning Models") + ylab("Mean AUC") + 
+    ggtitle("Comparison of Machine Learning \n Performance on Predicting ASD Status") + coord_flip()
+
+technical_effects_plot_2
+ggsave("~/Desktop/ASD/PDFS/technical_effects_plot_2.pdf", plot = technical_effects_plot_2, width = 7, height = 4, device = "pdf")
+```
+
+
+```{r}
+dem_effect$metric = factor(dem_effect$metric , levels=c("F1 Score", "Accuracy", "AUC"))
+dem_effect_plot <- ggplot(dem_effect, aes(x=metric, y=average, fill=value)) + 
+    geom_bar( aes(x = metric, fill = value), alpha = 0.9, position=position_dodge(), stat="identity",
+             size=.3, width=0.5) +      # Thinner lines
+      facet_grid(~variable) +
+  geom_errorbar(aes(ymin=average-sem, ymax=average+sem),
+                  size=.45,    # Thinner lines
+                  width=.2,
+                  position=position_dodge(.5)) +
+    #scale_fill_manual(values = c("#F5841F", "#2F4F4F", "#c4aa23", "#5B1918", "#2c7c94", 
+    #                             "#FDBF6F", "#FF7F00", "#B2DF8A", "#6A3D9A", "#293352", "#FB9A99")) + # "#c4aa23", "#5B1918", "#2c7c94"
+    scale_fill_manual(values = c("#FDBF6E", "#9BB2AF", "#FDBF6E", "#9BB2AF", "#FDBF6E", 
+                               "#446455", "#446455", "#446455")) +
+    xlab("Machine Learning Models") + ylab("Mean AUC") + 
+    ggtitle("Comparison of Machine Learning \n Performance on Predicting ASD Status") + coord_flip() 
+
+dem_effect_plot
+ml_metrics_plot <- ggarrange(technical_effects_plot_2, dem_effect_plot, ncol=2, nrow=1, common.legend = FALSE, legend="none")
+ml_metrics_plot
+ggsave("~/Desktop/ASD/PDFS/ml_metrics_plot.pdf", plot = ml_metrics_plot, width = 12, height = 4, device = "pdf")
+```
+
+
+
+
+
+
