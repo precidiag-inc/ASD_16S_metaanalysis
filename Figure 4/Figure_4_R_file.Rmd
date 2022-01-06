@@ -1,0 +1,147 @@
+---
+title: "Figure_4_R_file"
+author: "Aries Chavira"
+date: "1/6/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Code to generate Figure 4a-b
+
+# Load necessary packages 
+```{r}
+library(tidyverse)
+library(ggrepel)
+library(gcookbook)
+library("RColorBrewer")
+library(reshape2)
+library("wesanderson")
+library("ggpubr")
+library(rstatix)
+library(gridExtra)
+library(viridis)
+library("hrbrthemes")
+library(extrafont)
+library(plyr)
+library(ggplot2)
+```
+
+
+# Define function to calculate SEM for error bars
+```{r}
+summarySE <- function(data=NULL, measurevar, groupvars=NULL, na.rm=FALSE,
+                      conf.interval=.95, .drop=TRUE) {
+    library(plyr)
+
+    # New version of length which can handle NA's: if na.rm==T, don't count them
+    length2 <- function (x, na.rm=FALSE) {
+        if (na.rm) sum(!is.na(x))
+        else       length(x)
+    }
+
+    # This does the summary. For each group's data frame, return a vector with
+    # N, mean, and sd
+    datac <- ddply(data, groupvars, .drop=.drop,
+      .fun = function(xx, col) {
+        c(N    = length2(xx[[col]], na.rm=na.rm),
+          mean = mean   (xx[[col]], na.rm=na.rm),
+          sd   = sd     (xx[[col]], na.rm=na.rm)
+        )
+      },
+      measurevar
+    )
+
+    # Rename the "mean" column    
+    datac <- rename(datac, c("mean" = measurevar))
+
+    datac$se <- datac$sd / sqrt(datac$N)  # Calculate standard error of the mean
+
+    # Confidence interval multiplier for standard error
+    # Calculate t-statistic for confidence interval: 
+    # e.g., if conf.interval is .95, use .975 (above/below), and use df=N-1
+    ciMult <- qt(conf.interval/2 + .5, datac$N-1)
+    datac$ci <- datac$se * ciMult
+
+    return(datac)
+}
+```
+
+
+# Load and clean data
+```{r}
+ml = read_delim("~/Downloads/ML_Screen_Results.txt","\t", escape_double = FALSE, trim_ws = TRUE)
+asvs = read_delim("~/Desktop/ASD/all/Finalized_notebooks_for_github/AUC_aggregate.txt","\t", escape_double = FALSE, trim_ws = TRUE)
+```
+
+# Figure 4a data prep
+```{r}
+# Subset for AUC
+auc <- subset(ml, metric=="AUC")
+aggregate_only <- subset(auc, study=="Aggregate")
+genus_agg_only <- subset(aggregate_only, level=="genus")
+aggregate_only_se <- summarySE(genus_agg_only, measurevar="value", groupvars=c("model"))
+
+# Define colors for barplot
+color_table <- tibble(
+  models = c('AdaBoost','Gradient Boosting Classifier','SVC Kernel', 'SVC Gamma','KNN', 'Random Forest', 'Quadratic Discriminant', 'Neural Networks', 'Gaussian Process', 'Gaussian NB','Decision Tree'),
+  Color = c("#CE3534", "#666766","#666766","#666766", "#CE3534","#666766", "#666766", "#666766", "#666766", "#666766", "#666766")
+  )
+
+# Add solumn with SEM for errorbars
+asvs$se <- asvs$std / sqrt(5)
+```
+
+# Plot Figure 4a 
+```{r}
+auc_plot <- ggplot(asvs, aes(x=model, y=mean)) + 
+    geom_bar( aes(x = reorder(model, mean), fill = model), position=position_dodge(), stat="identity",
+             size=.2, width=0.6) +      # Thinner lines
+    geom_errorbar(aes(ymin=mean-se, ymax=mean+se),
+                  size=.45,    # Thinner lines
+                  width=.2,
+                  position=position_dodge(.9)) +
+    scale_fill_manual(values = color_table$Color) + 
+    xlab("Machine Learning Models") +
+    ylab("Mean AUC") +
+    ggtitle("Comparison of Machine Learning \n Performance on Predicting ASD Status") 
+
+auc_plot_2 <- auc_plot + theme(plot.title = element_text(hjust=0.5)) + scale_y_continuous(breaks = c(0.0, 0.15, 0.3, 0.45, 0.60, 0.75, 0.9)) + theme(aspect.ratio = .5) + coord_flip()
+auc_plot_2
+
+#ggsave("~/Desktop/ASD/PDFS/auc_ml_plot_a.pdf", plot = auc_plot_2, width = 6, height = 8, device = cairo_pdf)
+```
+
+# Figure 4b
+```{r}
+# Subset for best performing model
+gradientboost_only <- subset(auc, model=="XGB")
+gradientboost_only_se <- summarySE(gradientboost_only, measurevar="mean", groupvars=c("study", "level"))
+
+# Define opacity, size of points, and thickness of lines to highlight the aggregated dataset
+gradientboost_only$alpha <- with(gradientboost_only, ifelse(study=="Aggregate", 1, 0.35))
+gradientboost_only$size <- with(gradientboost_only, ifelse(study=="Aggregate", 4, 3))
+gradientboost_only$thiness <- with(gradientboost_only, ifelse(study=="Aggregate", 0.6, 0.4))
+
+        
+gb_performace <- ggplot(data=gradientboost_only, aes(study,mean)) + 
+    geom_point( aes(x=factor(level, levels=c("kingdom","phylum","class","order","family","genus","species","None")), y=mean, group=study, color=study, alpha = alpha), size = gradientboost_only$size, stroke = 0) +
+    geom_line( aes(x=factor(level, levels=c("kingdom","phylum","class","order","family","genus","species","None")), y=mean, group=study, color=study, alpha = alpha), size = gradientboost_only$thiness, stroke = 0) +
+   geom_errorbar(data = gradientboost_only, mapping = aes(x = level, y = mean, ymin = mean - std, ymax = mean + std, color = study), size=0.3, width=.1) +
+  scale_color_manual(values = c("#741b47", "#1F78B4", "#B2DF8A", "#33A02C", "#2F4F4F", "#E31A1C", "#B15928","#FDBF6F", "#FF7F00", "#00AFBB", "#6A3D9A", "#293352", "#FB9A99", "#FB9A10", "#CAB2D6")) + 
+  scale_y_continuous(breaks = c(0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0)) +
+  guides(colour = guide_legend(override.aes = list(size=0.4))) +
+    xlab("Phylogenetic Level") +
+    ylab("Classifier Accuracy") + ggtitle("Gradient Boosting Classifier \n Performance with Increased Resolution") +
+    scale_alpha_identity() +
+    theme(legend.text = element_text(size=9)) +
+    theme(plot.title = element_text(hjust=0.5))
+
+gb_performace
+#ggsave("~/Desktop/ASD/PDFS/gb_performace_4B.pdf", plot = gb_performace, width = 8, height = 5, device = pdf)
+```
+
+
+
