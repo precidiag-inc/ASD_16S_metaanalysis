@@ -1,0 +1,193 @@
+---
+title: "Figure_3"
+author: "Aries Chavira"
+date: "1/6/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Load necessary packages 
+```{r}
+library(tidyverse)
+library(ggrepel)
+library(gcookbook)
+library("RColorBrewer")
+library(reshape2)
+library("wesanderson")
+library("ggpubr")
+library(rstatix)
+library(gridExtra)
+library(viridis)
+library("hrbrthemes")
+library(extrafont)
+library(plyr)
+library(ggplot2)
+```
+
+## Code to generate the per study taxonomic log2 fold change plots 
+
+### Most significant phyla plot Figure 3a
+```{r}
+most_significant_phyla <- read_delim("~/Desktop/ASD/all/Finalized_notebooks_for_github/most_significant_phyla.txt", "\t", escape_double = FALSE, trim_ws = TRUE)
+shape_size_taxa = c(3, 4.5)
+
+Sig_phyla <- ggplot(most_significant_phyla) +
+  geom_point( aes(x=Phyla, y=`Log2(ASD/Control)`, group="Phyla", fill=Cohort_y ,size=Significant), colour="black",pch=21) + coord_flip()+
+ scale_size_manual(values=shape_size_taxa) + coord_flip()+
+  scale_fill_manual(values=c("#741b47", "#1F78B4", "#B2DF8A", "#33A02C", "#2F4F4F", "#E31A1C", "#B15928",
+                              "#FDBF6F", "#FF7F00", "#00AFBB", "#6A3D9A", "#293352", "#FB9A99", "#FB9A10", "#CAB2D6")) +
+  labs(title = "Most Significant Phyla") + theme(plot.title = element_text(hjust = 0.5)) + theme(text=element_text(size=12)) +
+  xlab("Phyla") +
+  ylab("Log2(ASD/Control)")
+
+Sig_phyla
+# ggsave("~/Desktop/ASD/PDFS/Sig_phyla.pdf", plot = Sig_phyla, width = 8, height = 3, device = "pdf")
+```
+
+
+### Most significant genera plot Figure 3b
+```{r}
+most_significant_genus <- read_delim("~/Desktop/ASD/all/Finalized_notebooks_for_github/Genus_sig.txt", "\t", escape_double = FALSE, trim_ws = TRUE)
+
+Sig_genus <- ggplot(most_significant_genus) +
+  geom_point( aes(x=Genus, y=`Log2(ASD/Control)`, group="Genus", fill=Cohort_y ,size=Significant), colour="black",pch=21) + coord_flip()+
+ scale_size_manual(values=shape_size_taxa) + coord_flip(clip = "off")+
+  scale_fill_manual(values=c("#741b47", "#1F78B4", "#B2DF8A", "#33A02C", "#2F4F4F", "#E31A1C", "#B15928",
+                              "#FDBF6F", "#FF7F00", "#00AFBB", "#6A3D9A", "#293352", "#FB9A99", "#FB9A10", "#CAB2D6")) +
+  labs(title = "Most Significant Genus") + theme(plot.title = element_text(hjust = 0.5)) + theme(text=element_text(size=12)) +
+  xlab("Genus") +
+  ylab("Log2(ASD/Control)")
+
+Sig_genus
+#ggsave("~/Desktop/ASD/PDFS/Sig_genus.pdf", plot = Sig_genus, width = 8, height = 5, device = "pdf")
+```
+
+### Most significant order plot Extended Data Figure 4c
+```{r}
+most_sig_order <- read_delim("~/Desktop/ASD/all/Finalized_notebooks_for_github/order_sig.txt", "\t", escape_double = FALSE, trim_ws = TRUE)
+
+Sig_Order <- ggplot(most_sig_order) +
+  geom_point( aes(x=Order, y=`Log2(ASD/Control)`, group="Order", fill=Cohort_y ,size=Significant), colour="black",pch=21) + coord_flip()+
+ scale_size_manual(values=shape_size_taxa) + coord_flip()+
+  scale_fill_manual(values=c("#741b47", "#1F78B4", "#B2DF8A", "#33A02C", "#2F4F4F", "#E31A1C", "#B15928",
+                              "#FDBF6F", "#FF7F00", "#00AFBB", "#6A3D9A", "#293352", "#FB9A99", "#FB9A10", "#CAB2D6")) +
+  labs(title = "Most Significant Order") + theme(plot.title = element_text(hjust = 0.5)) + theme(text=element_text(size=12)) +
+  xlab("Order") +
+  ylab("Log2(ASD/Control)") 
+
+Sig_Order
+ggsave("~/Desktop/ASD/PDFS/Sig_Order.pdf", plot = Sig_Order, width = 8, height = 6, device = "pdf")
+```
+
+### Most significant class plot Figure 4b
+```{r}
+most_sig_class <- read_delim("~/Desktop/ASD/all/Finalized_notebooks_for_github/Class_sig.txt", "\t", escape_double = FALSE, trim_ws = TRUE)
+shape_size_taxa = c(3, 4.5)
+
+Sig_class <- ggplot(most_sig_class) +
+  geom_point( aes(x=Class, y=`Log2(ASD/Control)`, group="Class", fill=Cohort_y ,size=Significant), colour="black",pch=21) + coord_flip()+
+ scale_size_manual(values=shape_size_taxa) + 
+  scale_fill_manual(values=c("#741b47", "#1F78B4", "#B2DF8A", "#33A02C", "#2F4F4F", "#E31A1C", "#B15928",
+                              "#FDBF6F", "#FF7F00", "#00AFBB", "#6A3D9A", "#293352", "#FB9A99", "#FB9A10", "#CAB2D6")) +
+  labs(title = "Most Significant Class") + theme(plot.title = element_text(hjust = 0.5)) + theme(text=element_text(size=12)) +
+  xlab("Class") +
+  ylab("Log2(ASD/Control)") 
+
+Sig_class
+ggsave("~/Desktop/ASD/PDFS/Sig_class.pdf", plot = Sig_class, width = 8, height = 6, device = "pdf")
+```
+
+### Plot the differences in the class Actinobacteria in ASD vs controls for Figure 3c
+```{r}
+Actinobacteria_2 <- read_delim("~/Desktop/ASD/all/Finalized_notebooks_for_github/Actinobacteria_2.txt", "\t", escape_double = FALSE, trim_ws = TRUE)
+
+Actinobacteria_asd_cont <- ggplot(Actinobacteria_2, aes(x=Status, y=log10_value)) + 
+  geom_boxplot(outlier.shape = NA, alpha = 0.4) + stat_boxplot(geom ='errorbar') +
+  geom_point(data = Actinobacteria_2,
+             aes(x = Status, y = log10_value, colour = Study), size = 1.5, stroke = 0, shape = 16, 
+             position=position_jitterdodge(jitter.width = 0.3, jitter.height = 0)) +
+  scale_fill_manual(values = c("#FF7F00","#BCB4AD")) +
+  scale_color_manual(values = c("#741b47", "#1F78B4", "#B2DF8A", "#33A02C", "#2F4F4F", "#E31A1C", "#B15928",
+                                "#FDBF6F", "#FF7F00", "#00AFBB", "#6A3D9A", "#293352", "#FB9A99", "#FB9A10", "#CAB2D6")) + 
+  labs(title = "Difference in the class \n Actinobacteria between ASD and Controls",
+    x = "Status",
+    y = "Log10(%relative abundance)") +
+  theme(plot.title = element_text(size = 14, hjust = 1.4)) +
+  stat_compare_means(aes(group = Status), label = "p.format", label.y = 0.2, label.x = 1.4) + theme_grey() # + facet_grid(. ~ Study ) 
+
+Actinobacteria_asd_cont 
+
+ggsave("~/Desktop/ASD/PDFS/Actinobacteria_asd_cont.pdf", plot = Actinobacteria_asd_cont, width = 8, height = 6, device = "pdf")
+```
+
+
+### Plot the differences in the genus Prevotella in ASD vs controls for Figure 3d
+```{r}
+Prevotella <- read_delim("~/Desktop/ASD/all/Finalized_notebooks_for_github/Prevotella_2.txt", "\t", escape_double = FALSE, trim_ws = TRUE)
+
+Prevotella_all <- ggboxplot(Prevotella, "Status", "log10_value", ylab = "log10_value", bxp.errorbar = TRUE, outlier.shape = NA, size = 0.3) + 
+  geom_point(data = Prevotella,
+             aes(x = Status, y = log10_value, colour = Study), size = 1.5, stroke = 0, shape = 16, 
+             position=position_jitterdodge(jitter.width = 0.2, jitter.height = 0)) +
+  scale_color_manual(values = c("#741b47", "#1F78B4", "#B2DF8A", "#33A02C", "#2F4F4F", "#E31A1C", "#B15928",
+                                "#FDBF6F", "#FF7F00", "#00AFBB", "#6A3D9A", "#FB9A99","#293352", "#FB9A10", "#CAB2D6")) +
+  labs(title = "Relative Abundance of the Genus \n Prevotella in ASD vs TD Children") + theme(plot.title = element_text(hjust = 0.5)) + theme(text=element_text(size=12)) +
+  theme(axis.text.x = element_text(angle = 10, hjust=1, size = 12)) + 
+  stat_compare_means(aes(group = Status), label = "p.format", label.x = 1.4, label.y = 0.4) + theme_grey() 
+
+Prevotella_all
+#ggsave("~/Desktop/ASD/PDFS/Prevotella_all.pdf", plot = Prevotella_all, width = 6, height = 4, device = "pdf")
+```
+
+
+### Plot the differences in the genus Bifidobacterium in ASD vs controls for Figure 3e
+```{r}
+Bifidobacterium_2 <- read_delim("~/Desktop/ASD/all/Finalized_notebooks_for_github/Bifidobacterium_2.txt", "\t", escape_double = FALSE, trim_ws = TRUE)
+
+Bifidobacterium_all <- ggboxplot(Bifidobacterium_2, "Status", "log10_value", ylab = "log10_value", bxp.errorbar = TRUE, outlier.shape = NA, size = 0.3) + 
+  geom_point(data = Bifidobacterium_2,
+             aes(x = Status, y = log10_value, colour = Study), size = 1.5, stroke = 0, shape = 16, 
+             position=position_jitterdodge(jitter.width = 0.2, jitter.height = 0)) +
+  scale_color_manual(values = c("#741b47", "#1F78B4", "#B2DF8A", "#33A02C", "#2F4F4F", "#E31A1C", "#B15928",
+                                "#FDBF6F", "#FF7F00", "#00AFBB", "#6A3D9A", "#FB9A99","#293352", "#FB9A10", "#CAB2D6")) +
+ labs(title = "Relative Abundance of \n Bifidobacterium in ASD vs TD Children") + theme(plot.title = element_text(hjust = 0.5)) + theme(text=element_text(size=12)) +
+  theme(axis.text.x = element_text(angle = 10, hjust=1, size = 12)) + 
+  stat_compare_means(aes(group = Status), label = "p.format", label.x = 1.4, label.y = 0.4) + theme_grey() 
+
+Bifidobacterium_all
+ggsave("~/Desktop/ASD/PDFS/Bifidobacterium_all.pdf", plot = Bifidobacterium_all, width = 6, height = 4, device = "pdf")
+```
+
+
+### Plot the bubble plot for Figure 3f
+```{r, message=FALSE}
+Pathways_sig_no_quinol_for_point_plot = read_delim("~/Desktop/ASD/all/Finalized_notebooks_for_github/Pathways_sig_no_quinol_for_point_plot.txt","\t", escape_double = FALSE, trim_ws = TRUE)
+```
+
+```{r}
+# Reorder y axis to be the same as clustermap
+Pathways_sig_no_quinol_for_point_plot$Pathways = factor(Pathways_sig_no_quinol_for_point_plot$Pathways , 
+                  levels=c('pyrimidine deoxyribonucleotides de novo biosynthesis IV', 'superpathway of glycolysis and Entner-Doudoroff', 'superpathway of N-acetylneuraminate degradation', 'superpathway of hexuronide and hexuronate degradation', 'superpathway of &beta;-D-glucuronide and D-glucuronate degradation', 'L-glutamate and L-glutamine biosynthesis', 'phosphatidylglycerol biosynthesis I (plastidic)', 'phosphatidylglycerol biosynthesis II (non-plastidic)', 'preQ0 biosynthesis', 'thiazole biosynthesis I (E. coli)','adenosylcobalamin salvage from cobinamide II','adenosylcobalamin biosynthesis from cobyrinate a,c-diamide I','glycolysis II (from fructose 6-phosphate)', 'NAD biosynthesis I (from aspartate)', 'UMP biosynthesis',"inosine-5'-phosphate biosynthesis I",'superpathway of L-threonine biosynthesis', 'heme biosynthesis II (anaerobic)', 'formaldehyde oxidation I', 'enterobactin biosynthesis','superpathway of L-tryptophan biosynthesis','glutaryl-CoA degradation', 'pyruvate fermentation to butanoate', 'superpathway of Clostridium acetobutylicum acidogenic fermentation', 'superpathway of (Kdo)2-lipid A biosynthesis', 'superpathway of heme biosynthesis from uroporphyrinogen-III', 'glucose and glucose-1-phosphate degradation', '1,4-dihydroxy-2-naphthoate biosynthesis I'))
+
+# Reorder x axis to be the same as clustermap
+Pathways_sig_no_quinol_for_point_plot$Cohort_y = factor(Pathways_sig_no_quinol_for_point_plot$Cohort_y , 
+                  levels=c("zou", "liu", "fouquier", "chen", "son", "cao", "zurita", "amgut_bloom_filt", "dan", "david", "kong", "berding","fasano", "kang"))
+
+# Remove NA's
+Pathways_sig_no_quinol_na <- subset(Pathways_sig_no_quinol_for_point_plot, Pathways!="NA")
+# Define size for significant points and non significant points 
+shape_size = c(2.5, 4.5) 
+
+sig_path_2 <- ggplot(Pathways_sig_no_quinol_na, aes(x = Cohort_y, y = Pathways)) + geom_point( aes(size=Significant, fill=`Log2(ASD/Control)`), colour="black",pch=21) + scale_fill_gradientn(colours = c("blue", "white", "red"),values = scales::rescale(c(-4, -0.9, -0.7, 0.1, 2))) + scale_size_manual(values=shape_size) + theme(axis.text.x = element_text(angle = 90, hjust=1))
+
+sig_path_2
+#ggsave("~/Desktop/ASD/PDFS/sig_path_2_bubble_map.pdf", plot = sig_path_2, width = 9, height = , device = cairo_pdf)
+```
+
+
+
+
+
