@@ -1,0 +1,222 @@
+---
+title: "R scripts to plot Figure 5a-d"
+author: "Aries Chavira"
+date: "1/10/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Load necessary packages 
+```{r}
+library(tidyverse)
+library(ggrepel)
+library(gcookbook)
+library("RColorBrewer")
+library(reshape2)
+library("wesanderson")
+library("ggpubr")
+library(rstatix)
+library(gridExtra)
+library(viridis)
+library("hrbrthemes")
+library(extrafont)
+library(plyr)
+library(ggplot2)
+```
+
+### Load data to plot Figure 5a-d
+```{r}
+Phyla <- read_delim("~/Desktop/ASD/all/Finalized_notebooks_for_github/Phyla.txt", "\t", escape_double = FALSE, trim_ws = TRUE)
+Class <- read_delim("~/Desktop/ASD/all/Finalized_notebooks_for_github/Class.txt", "\t", escape_double = FALSE, trim_ws = TRUE)
+Order <- read_delim("~/Desktop/ASD/all/Finalized_notebooks_for_github/Order.txt", "\t", escape_double = FALSE, trim_ws = TRUE)
+Genus <- read_delim("~/Desktop/ASD/all/Finalized_notebooks_for_github/Genus.txt", "\t", escape_double = FALSE, trim_ws = TRUE)
+
+Phyla <- subset(Phyla, Study!="son")
+Class <- subset(Class, Study!="son")
+Order <- subset(Order, Study!="son")
+Genus <- subset(Genus, Study!="son")
+```
+
+# Plot Figure 5a-d (top)
+```{r}
+# Figure 5a
+Prevotella_vr <- select(Genus, Study, Variable_region, g__Prevotella)
+
+Prevotella_vr_plot <- ggboxplot(Prevotella_vr_no_son, "Variable_region", "g__Prevotella", 
+                               ylab = "log2 Fold Change", xlab = "Variable Region", 
+                               title = "Prevotella", 
+                               bxp.errorbar = TRUE, outlier.shape = NA) +
+  geom_point(data = Prevotella_vr_no_son, 
+             aes(x = Variable_region, y = g__Prevotella, colour = Study), 
+             position = position_jitter(width = 0.2), size = 3, stroke = 0, shape = 16) +
+  scale_color_manual(values = c("#B15928", "#00AFBB", "#1F78B4", "#B2DF8A", "#33A02C", "#FB9A99", "#E31A1C", 
+                                "#FDBF6F", "#FF7F00", "#CAB2D6", "#6A3D9A", "deeppink", "#293352")) +
+  stat_compare_means(aes(group = Variable_region), label.y = 10.2 , label.x.npc = 0.33) + 
+  theme(plot.title = element_text(hjust = 0.5)) + 
+  theme(text=element_text(size=14)) + theme_grey() + coord_cartesian(clip = "off")
+
+# Figure 5b
+Prevotella_Bacteroides <- select(Genus, Study, Variable_region, `Prevotella/Bacteroides`)
+
+Prevotella_Bacteroides_vr_plot <- ggboxplot(Prevotella_Bacteroides, "Variable_region", "Prevotella/Bacteroides", 
+                               ylab = "log2 Fold Change", xlab = "Variable Region", 
+                               title = "Prevotella to Bacteroides", 
+                               bxp.errorbar = TRUE, outlier.shape = NA) +
+  geom_point(data = Prevotella_Bacteroides, 
+             aes(x = Variable_region, y = `Prevotella/Bacteroides`, colour = Study), 
+             position = position_jitter(width = 0.2), size = 3, stroke = 0, shape = 16) +
+  scale_color_manual(values = c("#B15928", "#00AFBB", "#1F78B4", "#B2DF8A", "#33A02C", "#FB9A99", "#E31A1C", 
+                                "#FDBF6F", "#FF7F00", "#CAB2D6", "#6A3D9A", "deeppink", "#293352")) +
+  stat_compare_means(aes(group = Variable_region), label.y = 10.2 , label.x.npc = 0.33) + 
+  theme(plot.title = element_text(hjust = 0.5)) + 
+  theme(text=element_text(size=14)) + theme_grey() + coord_cartesian(clip = "off")
+
+# Figure 5c
+Desulfovibrionales_vr <- select(Order, Study, Variable_region, o__Desulfovibrionales)
+
+Desulfovibrionales_vr_plot <- ggboxplot(Desulfovibrionales_vr_no_son, "Variable_region", "o__Desulfovibrionales", 
+                               ylab = "log2 Fold Change", xlab = "Variable Region", 
+                               title = "Desulfovibrionales", 
+                               bxp.errorbar = TRUE, outlier.shape = NA) +
+  geom_point(data = Desulfovibrionales_vr_no_son, 
+             aes(x = Variable_region, y = o__Desulfovibrionales, colour = Study), 
+             position = position_jitter(width = 0.2), size = 3, stroke = 0, shape = 16) +
+  scale_color_manual(values = c("#B15928", "#00AFBB", "#1F78B4", "#B2DF8A", "#33A02C", "#FB9A99", "#E31A1C", 
+                                "#FDBF6F", "#FF7F00", "#CAB2D6", "#6A3D9A", "deeppink", "#293352")) +
+  stat_compare_means(aes(group = Variable_region), label.y = 1.5, label.x.npc = 0.33) + 
+  theme(plot.title = element_text(hjust = 0.5)) + 
+  theme(text=element_text(size=14)) + theme_grey() + coord_cartesian(clip = "off")
+
+# Figure 5d
+Deltaproteobacteria_vr <- select(Class, Study, Variable_region, c__Deltaproteobacteria)
+
+Deltaproteobacteria_vr_plot <- ggboxplot(Deltaproteobacteria_vr_no_son, "Variable_region", "c__Deltaproteobacteria", 
+                               ylab = "log2 Fold Change", xlab = "Variable Region", 
+                               title = "Deltaproteobacteria", 
+                               bxp.errorbar = TRUE, outlier.shape = NA) +
+  geom_point(data = Deltaproteobacteria_vr_no_son, 
+             aes(x = Variable_region, y = c__Deltaproteobacteria, colour = Study), 
+             position = position_jitter(width = 0.2), size = 3, stroke = 0, shape = 16) +
+  scale_color_manual(values = c("#B15928", "#00AFBB", "#1F78B4", "#B2DF8A", "#33A02C", "#FB9A99", "#E31A1C", 
+                                "#FDBF6F", "#FF7F00", "#CAB2D6", "#6A3D9A", "deeppink", "#293352")) +
+  stat_compare_means(aes(group = Variable_region), label.y = 1.5, label.x.npc = 0.33) + 
+  theme(plot.title = element_text(hjust = 0.5)) + theme(text=element_text(size=14)) + theme_grey() + coord_cartesian(clip = "off")
+```
+
+
+# Plot Figure 5a-d (bottom)
+
+
+```{r}
+# Figure 5a
+Prevotella <- read_delim("~/Desktop/ASD/all/Finalized_notebooks_for_github/Prevotella_2.txt", "\t", escape_double = FALSE, trim_ws = TRUE)
+
+Prevotella$Variable_Region = factor(Prevotella$Variable_Region , levels=c("V4", "V3V4", "V1V2"))
+Prevotella_no_v1v2 <- subset(Prevotella, Variable_Region!="V1V2")
+  
+Prevotella_variable_region <- ggplot(Prevotella_no_v1v2, aes(x=Variable_Region, y=log10_value, fill=Status)) + 
+  geom_boxplot(outlier.shape = NA, alpha = 0.4) + stat_boxplot(geom ='errorbar') +
+  geom_point(data = Prevotella_no_v1v2,
+             aes(x = Variable_Region, y = log10_value, group = Status ,colour = Study), size = 1.5, stroke = 0, shape = 16, 
+             position=position_jitterdodge(jitter.width = 0.3, jitter.height = 0)) +
+  scale_fill_manual(values = c("#FF7F00","#BCB4AD")) +
+  scale_color_manual(values = c("#741b47", "#1F78B4", "#B2DF8A", "#33A02C", "#2F4F4F", "#E31A1C", "#B15928",
+                                "#FDBF6F", "#FF7F00", "#00AFBB", "#6A3D9A", "#293352", "#FB9A99", "#FB9A10", "#CAB2D6")) + 
+  ggtitle(label = "Prevotella to Bacteroides") +
+  labs(
+    x = "Variable Region",
+    y = "Log10(%relative abundance)") +
+  theme(plot.title = element_text(size = 14, hjust = 0.5)) +
+  guides(fill=FALSE, color = FALSE) +
+  stat_compare_means(aes(group = Status), label = "p.format", label.y = 2.4) + theme_grey() 
+Prevotella_variable_region
+
+
+# Figure 5b
+Prevotella_bacteroides <- read_delim("~/Desktop/ASD/all/Finalized_notebooks_for_github/Prevotella_bacteroides.txt", "\t", escape_double = FALSE, trim_ws = TRUE)
+
+Prevotella_bacteroides$Variable_Region = factor(Prevotella_bacteroides$Variable_Region , levels=c("V4", "V3V4", "V1V2"))
+Prevotella_bacteroides_no_v1v2 <- subset(Prevotella_bacteroides, Variable_Region!="V1V2")
+  
+Prevotella_bacteroides_variable_region <- ggplot(Prevotella_bacteroides_no_v1v2, aes(x=Variable_Region, y=log10_value, fill=Status)) + 
+  geom_boxplot(outlier.shape = NA, alpha = 0.4) + stat_boxplot(geom ='errorbar') +
+  geom_point(data = Prevotella_bacteroides_no_v1v2,
+             aes(x = Variable_Region, y = log10_value, group = Status ,colour = Study), size = 1.5, stroke = 0, shape = 16, 
+             position=position_jitterdodge(jitter.width = 0.3, jitter.height = 0)) +
+  scale_fill_manual(values = c("#FF7F00","#BCB4AD")) +
+  scale_color_manual(values = c("#741b47", "#1F78B4", "#B2DF8A", "#33A02C", "#2F4F4F", "#E31A1C", "#B15928",
+                                "#FDBF6F", "#FF7F00", "#00AFBB", "#6A3D9A", "#293352", "#FB9A99", "#FB9A10", "#CAB2D6")) + 
+  ggtitle(label = "Prevotella to Bacteroides") +
+  labs(
+    x = "Variable Region",
+    y = "Log10(%relative abundance)") +
+  theme(plot.title = element_text(size = 14, hjust = 0.5)) +
+  guides(fill=FALSE, color = FALSE) +
+  stat_compare_means(aes(group = Status), label = "p.format", label.y = 2.4) + theme_grey() 
+
+
+# Figure 5c
+Desulfovibrionales <- read_delim("~/Desktop/ASD/all/Finalized_notebooks_for_github/Desulfovibrionales.txt", "\t", escape_double = FALSE, trim_ws = TRUE)
+Desulfovibrionales$Variable_Region = factor(Desulfovibrionales$Variable_Region , levels=c("V4", "V3V4", "V1V2"))
+Desulfovibrionales_no_v1v2 <- subset(Desulfovibrionales, Variable_Region!="V1V2")
+
+Desulfovibrionales_vr_by_sample <- ggplot(Desulfovibrionales_no_v1v2, aes(x=Variable_Region, y=log10_value, fill=Status)) + 
+  geom_boxplot(outlier.shape = NA, alpha = 0.4) + stat_boxplot(geom ='errorbar') +
+  geom_point(data = Desulfovibrionales_no_v1v2,
+             aes(x = Variable_Region, y = log10_value, group = Status ,colour = Study), size = 1.5, stroke = 0, shape = 16, 
+             position=position_jitterdodge(jitter.width = 0.3, jitter.height = 0)) +
+  scale_fill_manual(values = c("#FF7F00","#BCB4AD")) +
+  scale_color_manual(values = c("#741b47", "#1F78B4", "#B2DF8A", "#33A02C", "#2F4F4F", "#E31A1C", "#B15928",
+                                "#FDBF6F", "#FF7F00", "#00AFBB", "#6A3D9A", "#293352", "#FB9A99", "#FB9A10", "#CAB2D6")) + 
+  ggtitle(label = "Desulfovibrionales") +
+  labs(
+    x = "Variable Region",
+    y = "Log10(%relative abundance)") +
+  theme(plot.title = element_text(size = 14, hjust = 0.5)) + guides(fill=FALSE, color = FALSE) +
+  stat_compare_means(aes(group = Status), label = "p.format", label.y = -1) + theme_grey() 
+
+
+# Figure 5d
+Deltaproteobacteria <- read_delim("~/Desktop/ASD/all/Finalized_notebooks_for_github/Deltaproteobacteria.txt", "\t", escape_double = FALSE, trim_ws = TRUE)
+Deltaproteobacteria$Variable_Region = factor(Deltaproteobacteria$Variable_Region , levels=c("V4", "V3V4", "V1V2"))
+Deltaproteobacteria_no_v1v2 <- subset(Deltaproteobacteria, Variable_Region!="V1V2")
+
+Deltaproteobacteria_vr <- ggplot(Deltaproteobacteria_no_v1v2, aes(x=Variable_Region, y=log10_value, fill=Status)) + 
+  geom_boxplot(outlier.shape = NA, alpha = 0.4) + stat_boxplot(geom ='errorbar') +
+  geom_point(data = Deltaproteobacteria_no_v1v2,
+             aes(x = Variable_Region, y = log10_value, group = Status ,colour = Study), size = 1.5, stroke = 0, shape = 16, 
+             position=position_jitterdodge(jitter.width = 0.3, jitter.height = 0)) +
+  scale_fill_manual(values = c("#FF7F00","#BCB4AD")) +
+  scale_color_manual(values = c("#741b47", "#1F78B4", "#B2DF8A", "#33A02C", "#2F4F4F", "#E31A1C", "#B15928",
+                                "#FDBF6F", "#FF7F00", "#00AFBB", "#6A3D9A", "#293352", "#FB9A99", "#FB9A10", "#CAB2D6")) + 
+  ggtitle(label = "Deltaproteobacteria") +
+  labs(
+    x = "Variable Region",
+    y = "Log10(%relative abundance)") +
+  theme(plot.title = element_text(size = 14, hjust = 0.5)) + guides(fill=FALSE, color = FALSE) +
+  stat_compare_means(aes(group = Status), label = "p.format", label.y = -1) + theme_grey() 
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
