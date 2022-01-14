@@ -1,0 +1,161 @@
+---
+title: "Extended Data Figure 5"
+author: "Aries Chavira"
+date: "1/11/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# This file contains the code to generate each pannel in Extended Data Figure 5
+
+### Load necessary packages 
+```{r}
+library(tidyverse)
+library(ggrepel)
+library(gcookbook)
+library("RColorBrewer")
+library(reshape2)
+library("wesanderson")
+library("ggpubr")
+library(rstatix)
+library(gridExtra)
+library(viridis)
+library("hrbrthemes")
+library(extrafont)
+library(plyr)
+library(ggplot2)
+```
+
+
+### Load data
+```{r}
+ml = read_delim("~/Downloads/ML_Screen_Results.txt","\t", escape_double = FALSE, trim_ws = TRUE)
+asvs = read_delim("~/Desktop/ASD/all/Finalized_notebooks_for_github/AUC_aggregate.txt","\t", escape_double = FALSE, trim_ws = TRUE)
+
+aggregate_only <- subset(ml, study=="Aggregate")
+```
+
+
+# Plot Extended Data Figure 5a
+```{r}
+f1 <- subset(aggregate_only, metric=="F1")
+f1_asvs <- subset(f1, level=="None")
+
+# Define colors for barplot
+color_table <- tibble(
+  models = c('AdaBoost','Gradient Boosting Classifier','SVC Kernel', 'SVC Gamma','KNN', 'Random Forest', 'Quadratic Discriminant', 'Neural Networks', 'Gaussian Process', 'Gaussian NB','Decision Tree'),
+  Color = c("#CE3534", "#CE3534","#666766","#666766", "#666766","#666766", "#666766", "#666766", "#666766", "#666766", "#666766")
+  )
+
+f1_se_plot <- ggplot(f1_asvs, aes(x=model, y=mean)) + 
+    geom_bar( aes(x = reorder(model, -mean), fill = model), position=position_dodge(), stat="identity",
+             size=.2) +      # Thinner lines
+    geom_errorbar(aes(ymin=mean-std, ymax=mean+std),
+                  size=.45,    # Thinner lines
+                  width=.2,
+                  position=position_dodge(.9)) +
+    scale_fill_manual(values = color_table$Color) + 
+    xlab("Machine Learning Models") +
+    ylab("Mean F1 Score") +
+    ggtitle("Comparison of Machine Learning \n Performance on Predicting ASD Status") 
+
+f1_se_plot_2 <- f1_se_plot + 
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) + 
+  theme(plot.title = element_text(hjust=0.5)) + scale_y_continuous(breaks = c(0.0, 0.15, 0.3, 0.45, 0.60, 0.75, 0.9))
+#ggsave("~/Desktop/ASD/PDFS/f1_se_plot_2.pdf", plot = f1_se_plot_2, width = 8, height = 5, device = pdf)
+```
+
+
+# Plot Extended Data Figure 5b
+```{r}
+accuracy <- read_delim("~/Downloads/Figure4a_Supp2_accuracy.txt","\t", escape_double = FALSE, trim_ws = TRUE)
+
+accuracy_plot <- ggplot(accuracy, aes(x=model, y=mean)) + 
+    geom_bar( aes(x = reorder(model, -mean), fill = model), position=position_dodge(), stat="identity",
+             size=.2) +      # Thinner lines
+    geom_errorbar(aes(ymin=mean-std, ymax=mean+std),
+                  size=.45,    # Thinner lines
+                  width=.2,
+                  position=position_dodge(.9)) +
+    scale_fill_manual(values = color_table$Color) + 
+    xlab("Machine Learning Models") +
+    ylab("Mean Accuracy") +
+    ggtitle("Comparison of Machine Learning \n Performance on Predicting ASD Status") 
+
+accuracy_plot_2 <- accuracy_plot + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) + theme(plot.title = element_text(hjust=0.5)) + scale_y_continuous(breaks = c(0.0, 0.15, 0.3, 0.45, 0.60, 0.75, 0.9))
+
+accuracy_plot_2
+#ggsave("~/Desktop/ASD/PDFS/accuracy_plot_2.pdf", plot = accuracy_plot_2, width = 8, height = 5, device = pdf)
+```
+
+
+# Plot Extended Data Figure 5c
+```{r}
+Adaboost_only <- subset(ml, model=="AdaBoost")
+Adaboost_only_asv <- subset(Adaboost_only, metric=="AUC")
+Adaboost_only_se <- summarySE(Adaboost_only, measurevar="value", groupvars=c("study", "level"))
+
+Adaboost_only_asv$alpha <- with(Adaboost_only_asv, ifelse(study=="Aggregate", 1, 0.4))
+Adaboost_only_asv$size <- with(Adaboost_only_asv, ifelse(study=="Aggregate", 4, 3))
+Adaboost_only_asv$thiness <- with(Adaboost_only_asv, ifelse(study=="Aggregate", 0.6, 0.4))
+
+Adaboost_only_se_plot <- ggplot(data=Adaboost_only_asv, aes(study,mean)) + 
+    geom_point( aes(x=factor(level, levels=c("kingdom","phylum","class","order","family","genus","species", "None")), y=mean, group=study, color=study, alpha = alpha), size = Adaboost_only_asv$size, stroke = 0) +
+    geom_line( aes(x=factor(level, levels=c("kingdom","phylum","class","order","family","genus","species", "None")), y=mean, group=study, color=study, alpha = alpha), size = Adaboost_only_asv$thiness, stroke = 0) +
+    geom_errorbar(data = Adaboost_only_asv, mapping = aes(x = level, y = mean, ymin = mean - std, ymax = mean + std, color = study), size=0.3, width=.1) +
+  scale_color_manual(values = c("#741b47", "#1F78B4", "#B2DF8A", "#33A02C", "#2F4F4F", "#E31A1C", "#B15928","#FDBF6F", "#FF7F00", "#00AFBB", "#6A3D9A", "#293352", "#FB9A99", "#FB9A10", "#CAB2D6")) + 
+  scale_y_continuous(breaks = c(0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0)) +
+    xlab("Phylogenetic Level") +
+    ylab("Accuracy") + ggtitle("Increased Resolution Effect on \n AdaBoost classifier Performance") +
+    scale_alpha_identity() +
+    theme(legend.text = element_text(size=9)) +
+    theme(plot.title = element_text(hjust=0.5))
+
+#ggsave("~/Desktop/ASD/PDFS/Adaboost_only_se_plot.pdf", plot = Adaboost_only_se_plot, width = 8, height = 5, device = pdf)
+```
+
+
+# Plot Extended Data Figure 5d
+```{r}
+decisiontree <- subset(ml, model=="Decision Tree")
+decisiontree_se_asv <- subset(decisiontree, metric=="AUC")
+
+decisiontree_se_asv$alpha <- with(decisiontree_se_asv, ifelse(study=="Aggregate", 1, 0.4))
+decisiontree_se_asv$size <- with(decisiontree_se_asv, ifelse(study=="Aggregate", 4, 3))
+decisiontree_se_asv$thiness <- with(decisiontree_se_asv, ifelse(study=="Aggregate", 0.6, 0.4))
+
+decisiontree_se_plot <- ggplot(data=decisiontree_se_asv, aes(study,value)) + 
+    geom_point( aes(x=factor(level, levels=c("kingdom","phylum","class","order","family","genus","species", "None")), y=mean, group=study, color=study, alpha = alpha), size = 2) +
+    geom_line( aes(x=factor(level, levels=c("kingdom","phylum","class","order","family","genus","species", "None")), y=mean, group=study, color=study, alpha = alpha))+
+  scale_color_manual(values = c("#741b47", "#1F78B4", "#B2DF8A", "#33A02C", "#2F4F4F", "#E31A1C", "#B15928","#FDBF6F", "#FF7F00", "#00AFBB", "#6A3D9A", "#293352", "#FB9A99", "#FB9A10", "#CAB2D6")) +
+  geom_errorbar(data = decisiontree_se_asv, mapping = aes(x = level, y = mean, ymin = mean - std, ymax = mean + std, color = study), size=0.3, width=.1) +
+  scale_color_manual(values = c("#741b47", "#1F78B4", "#B2DF8A", "#33A02C", "#2F4F4F", "#E31A1C", "#B15928","#FDBF6F", "#FF7F00", "#00AFBB", "#6A3D9A", "#293352", "#FB9A99", "#FB9A10", "#CAB2D6")) + 
+  scale_y_continuous(breaks = c(0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0)) +
+    xlab("Phylogenetic Level") +
+    ylab("AUC") + ggtitle("Increased Resolution Effect on \n Decision Tree Classifier Performance") +
+    scale_alpha_identity() +
+    theme(legend.text = element_text(size=9)) +
+    theme(plot.title = element_text(hjust=0.5))
+
+#ggsave("~/Desktop/ASD/PDFS/decisiontree_se_plot.pdf", plot = decisiontree_se_plot, width = 8, height = 5, device = pdf)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

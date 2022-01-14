@@ -1,0 +1,280 @@
+---
+title: "Supplemental Figures"
+author: "Aries Chavira"
+date: "1/11/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## File to plot Supplemental Figures 1-12
+
+### Load data
+```{r}
+Phyla <- read_delim("~/Desktop/ASD/all/Finalized_notebooks_for_github/Phyla.txt", "\t", escape_double = FALSE, trim_ws = TRUE)
+Order <- read_delim("~/Desktop/ASD/all/Finalized_notebooks_for_github/Order.txt", "\t", escape_double = FALSE, trim_ws = TRUE)
+Class <- read_delim("~/Desktop/ASD/all/Finalized_notebooks_for_github/Class.txt", "\t", escape_double = FALSE, trim_ws = TRUE)
+Genus <- read_delim("~/Desktop/ASD/all/Finalized_notebooks_for_github/Genus.txt", "\t", escape_double = FALSE, trim_ws = TRUE)
+
+melted_Phyla <- melt(Phyla,id.vars=c('Study','seq_depth_range','Control_relation', 'country','Variable_region'), measure.vars=c('p__Bacteroidetes', 'p__Firmicutes', 'p__Actinobacteria', 'Firmicutes/Bacteroidetes', 'Proteobacteria/Bacteroidetes','p__Verrucomicrobia', 'p__Proteobacteria', 'p__Cyanobacteria'))
+
+melted_Order<- melt(Order,id.vars=c('Study','seq_depth_range','Control_relation', 'country','Variable_region'), measure.vars=c('o__Lactobacillales', 'o__Coriobacteriales', 'o__Erysipelotrichales', 'o__Bacteroidales', 'o__Burkholderiales', 'o__Desulfovibrionales', 'o__Enterobacteriales', 'o__Turicibacterales', 'o__Clostridiales', 'o__Verrucomicrobiales', 'o__Bifidobacteriales', 'o__Pasteurellales'))
+
+melted_Class<- melt(Class,id.vars=c('Study','seq_depth_range','Control_relation', 'country','Variable_region'), measure.vars=c('c__Coriobacteriia','c__Bacilli','c__Erysipelotrichi','c__Bacteroidia','c__Betaproteobacteria','c__Deltaproteobacteria','c__Clostridia','c__Verrucomicrobiae','c__Actinobacteria','c__Gammaproteobacteria','c__4C0d-2'))
+
+melted_Genus <- melt(Genus,id.vars=c('Study','seq_depth_range','Control_relation','country','Variable_region'), measure.vars=c(
+  'g__Faecalibacterium', 'g__Bifidobacterium','g__Sutterella','g__Phascolarctobacterium','g__Bilophila','g__Parabacteroides',
+  'g__Streptococcus','g__Veillonella','g__Bacteroides','g__Alistipes','g__Turicibacter','g__Eggerthella','g__Ruminococcus',
+  'g__Blautia','g__Prevotella','g__Dialister','g__Oxalobacter','g__Haemophilus','g__Akkermansia','g__Oscillospira','g__Clostridium',
+  'g__Paraprevotella','g__Butyricimonas','g__Odoribacter','g__Collinsella','Prevotella/Bacteroides'))
+```
+
+
+# Supplemental Figure 1
+```{r}
+Phyla_seq_depth_range_plot <- ggboxplot(melted_Phyla, "seq_depth_range", "value", facet.by = "variable", ylab = "Log2FoldcChange(ASD/TD)", bxp.errorbar = TRUE, outlier.shape = NA, size = 0.3) + 
+  geom_point(data = melted_Phyla, 
+             aes(x = seq_depth_range, y = value, colour = Study, group = seq_depth_range), size = 2, stroke = 0, shape = 16, 
+             position=position_jitterdodge(jitter.width = 0.2, jitter.height = 0)) +
+  scale_color_manual(values = c("#B15928", "#00AFBB", "#1F78B4", "#B2DF8A", "#33A02C", "#FB9A99", "#E31A1C", 
+                                "#FDBF6F", "#FF7F00", "#CAB2D6", "#6A3D9A", "#FFFF99", "deeppink", "#293352")) +
+  theme(plot.title = element_text(hjust = 0.1)) +
+  theme(axis.text.x = element_text(angle = 10, hjust=1)) + 
+  stat_compare_means(aes(group = seq_depth_range), label = "p.format", label.y = 3, label.x.npc = 0.33) +
+  theme(plot.title = element_text(hjust = 0.5, face="bold")) + theme(text=element_text(size=14)) + theme_grey() 
+
+#ggsave("~/Desktop/ASD/PDFS/Log_fold_change_plots/Phyla_seq_depth_range_plot.pdf", plot = Phyla_seq_depth_range_plot, width = 10, height = 10, device = "pdf")
+```
+
+
+# Supplemental Figure 2
+```{r}
+Class_seq_depth_plot <- ggboxplot(melted_Class, "seq_depth_range", "value", facet.by = "variable", ylab = "Log2FoldcChange(ASD/TD)", bxp.errorbar = TRUE, outlier.shape = NA, size = 0.3) + 
+  geom_point(data = melted_Class, 
+             aes(x = seq_depth_range, y = value, colour = Study, group = seq_depth_range), size = 2, stroke = 0, shape = 16, 
+             position=position_jitterdodge(jitter.width = 0.2, jitter.height = 0)) +
+  scale_color_manual(values = c("#B15928", "#00AFBB", "#1F78B4", "#B2DF8A", "#33A02C", "#FB9A99", "#E31A1C", 
+                                "#FDBF6F", "#FF7F00", "#CAB2D6", "#6A3D9A", "#FFFF99", "deeppink", "#293352")) +
+  theme(plot.title = element_text(hjust = 0.1)) +
+  theme(axis.text.x = element_text(angle = 10, hjust=1)) + 
+  stat_compare_means(aes(group = seq_depth_range), label = "p.format", label.y = 4, label.x.npc = 0.33) +
+  theme(plot.title = element_text(hjust = 0.5, face="bold")) + theme(text=element_text(size=14)) + theme_grey() 
+
+#ggsave("~/Desktop/ASD/PDFS/Log_fold_change_plots/Class_seq_depth_plot.pdf", plot = Class_seq_depth_plot, width = 8, height = 6, device = "pdf")
+```
+
+
+# Supplemental Figure 3
+```{r}
+Order_seq_depth_plot <- ggboxplot(melted_Order, "seq_depth_range", "value", facet.by = "variable", ylab = "Log2FoldcChange(ASD/TD)", bxp.errorbar = TRUE, outlier.shape = NA, size = 0.3) + 
+  geom_point(data = melted_Order, 
+             aes(x = seq_depth_range, y = value, colour = Study, group = seq_depth_range), size = 2, stroke = 0, shape = 16, 
+             position=position_jitterdodge(jitter.width = 0.2, jitter.height = 0)) +
+  scale_color_manual(values = c("#B15928", "#00AFBB", "#1F78B4", "#B2DF8A", "#33A02C", "#FB9A99", "#E31A1C", 
+                                "#FDBF6F", "#FF7F00", "#CAB2D6", "#6A3D9A", "#FFFF99", "deeppink", "#293352")) +
+  theme(plot.title = element_text(hjust = 0.1)) +
+  theme(axis.text.x = element_text(angle = 10, hjust=1)) + 
+  stat_compare_means(aes(group = seq_depth_range), label = "p.format", label.y = 4, label.x.npc = 0.33) +
+  theme(plot.title = element_text(hjust = 0.5, face="bold")) + theme(text=element_text(size=14)) + theme_grey() 
+
+#ggsave("~/Desktop/ASD/PDFS/Log_fold_change_plots/Order_seq_depth_plot.pdf", plot = Order_seq_depth_plot, width = 8, height = 6, device = "pdf")
+```
+
+
+# Supplemental Figure 4
+```{r}
+genus_seq_depth_plot <- ggboxplot(melted_Genus, "seq_depth_range", "value", facet.by = "variable", ylab = "Log2FoldcChange(ASD/TD)", bxp.errorbar = TRUE, outlier.shape = NA, size = 0.3) + 
+  geom_point(data = melted_Genus, 
+             aes(x = seq_depth_range, y = value, colour = Study, group = seq_depth_range), size = 1.5, stroke = 0, shape = 16, 
+             position=position_jitterdodge(jitter.width = 0.2, jitter.height = 0)) +
+  scale_color_manual(values = c("#B15928", "#00AFBB", "#1F78B4", "#B2DF8A", "#33A02C", "#FB9A99", "#E31A1C", 
+                                "#FDBF6F", "#FF7F00", "#CAB2D6", "#6A3D9A", "#FFFF99", "deeppink", "#293352")) +
+  theme(plot.title = element_text(hjust = 0.1)) +
+  theme(axis.text.x = element_text(angle = 10, hjust=1, size = 8)) + 
+  stat_compare_means(aes(group = seq_depth_range), label = "p.format", label.y = 8, label.x.npc = 0.33) +
+  theme(plot.title = element_text(hjust = 0.5, face="bold")) + theme_grey() 
+
+#ggsave("~/Desktop/ASD/PDFS/Log_fold_change_plots/genus_seq_depth_plot.pdf", plot = genus_seq_depth_plot, width = 20, height = 15, device = "pdf")
+```
+
+
+# Supplemental Figure 5
+```{r}
+# Remove cohort from Ecuador 
+Phyla_no_zurita <- subset(Phyla, Study!="zurita")
+
+# Convert to long format
+melted_Phyla_no_zurita <- melt(Phyla_no_zurita,id.vars=c('Study','seq_depth_range','Control_relation', 'country','Variable_region'), measure.vars=c('p__Bacteroidetes', 'p__Firmicutes', 'p__Actinobacteria', 'Firmicutes/Bacteroidetes', 'Proteobacteria/Bacteroidetes', 'p__Verrucomicrobia', 'p__Proteobacteria', 'p__Cyanobacteria'))
+
+Phyla_no_zurita_country_plot <- ggboxplot(melted_Phyla_no_zurita, "country", "value", facet.by = "variable", ylab = "Log2FoldcChange(ASD/TD)", bxp.errorbar = TRUE, outlier.shape = NA, size = 0.3) + 
+  geom_point(data = melted_Phyla_no_zurita, 
+             aes(x = country, y = value, colour = Study, group = country), size = 1.5, stroke = 0, shape = 16, 
+             position=position_jitterdodge(jitter.width = 0.2, jitter.height = 0)) +
+  scale_color_manual(values = c("#00AFBB", "#1F78B4", "#33A02C", "#B2DF8A", "#2F4F4F", "#FB9A99", "#E31A1C", 
+                                "#FDBF6F", "#FF7F00", "#CAB2D6", "#6A3D9A", "#B15928","#293352")) +
+  theme(plot.title = element_text(hjust = 0.1)) +
+  theme(axis.text.x = element_text(angle = 10, hjust=1, size = 8)) + 
+  stat_compare_means(aes(group = country), label = "p.format", label.y = 3, label.x.npc = 0.33) +
+  theme(plot.title = element_text(hjust = 0.5, face="bold")) + theme_grey() 
+
+#ggsave("~/Desktop/ASD/PDFS/Log_fold_change_plots/Phyla_no_zurita_country_plot.pdf", plot = Phyla_no_zurita_country_plot, width = 20, height = 15, device = "pdf")
+```
+
+
+# Supplemental Figure 6
+```{r}
+# Remove cohort from Ecuador 
+melted_Class_no_zurita = subset(melted_Class, Study!="zurita")
+
+Class_country_plot <- ggboxplot(melted_Class_no_zurita, "country", "value", facet.by = "variable", ylab = "Log2FoldcChange(ASD/TD)", bxp.errorbar = TRUE, outlier.shape = NA, size = 0.3) + 
+  geom_point(data = melted_Class_no_zurita, 
+             aes(x = country, y = value, colour = Study, group = country), size = 2, stroke = 0, shape = 16, 
+             position=position_jitterdodge(jitter.width = 0.2, jitter.height = 0)) +
+  scale_color_manual(values = c("#00AFBB", "#1F78B4", "#33A02C", "#B2DF8A", "#2F4F4F", "#FB9A99", "#E31A1C", 
+                                "#FDBF6F", "#FF7F00", "#CAB2D6", "#6A3D9A", "#B15928","#293352")) +
+  theme(plot.title = element_text(hjust = 0.1)) +
+  theme(axis.text.x = element_text(angle = 10, hjust=1)) + 
+  stat_compare_means(aes(group = country), label = "p.format", label.y = 4, label.x.npc = 0.33) +
+  theme(plot.title = element_text(hjust = 0.5, face="bold")) + theme(text=element_text(size=14)) + theme_grey() 
+
+#ggsave("~/Desktop/ASD/PDFS/Log_fold_change_plots/Class_country_plot.pdf", plot = Class_country_plot, width = 8, height = 6, device = "pdf")
+```
+
+
+# Supplemental Figure 7
+```{r}
+# Remove cohort from Ecuador 
+Order_no_zurita <- subset(Order, Study!="zurita")
+
+# Convert to long format
+melted_Order_no_zurita <- melt(Order_no_zurita,id.vars=c('Study','seq_depth_range','Control_relation', 'country'), measure.vars=c('o__Lactobacillales', 'o__Coriobacteriales','o__Erysipelotrichales', 'o__Bacteroidales', 'o__Burkholderiales', 'o__Desulfovibrionales', 'o__Enterobacteriales', 'o__Turicibacterales', 'o__Clostridiales', 'o__Verrucomicrobiales', 'o__Bifidobacteriales', 'o__Pasteurellales'))
+
+Order_country_plot <- ggboxplot(melted_Order_no_zurita, "country", "value", facet.by = "variable", ylab = "Log2FoldcChange(ASD/TD)", bxp.errorbar = TRUE, outlier.shape = NA, size = 0.3) + 
+  geom_point(data = melted_Order_no_zurita, 
+             aes(x = country, y = value, colour = Study, group = country), size = 2, stroke = 0, shape = 16, 
+             position=position_jitterdodge(jitter.width = 0.2, jitter.height = 0)) +
+  scale_color_manual(values = c("#00AFBB", "#1F78B4", "#33A02C", "#B2DF8A", "#2F4F4F", "#FB9A99", "#E31A1C", 
+                                "#FDBF6F", "#FF7F00", "#CAB2D6", "#6A3D9A", "#B15928","#293352")) +
+  theme(plot.title = element_text(hjust = 0.1)) +
+  theme(axis.text.x = element_text(angle = 10, hjust=1)) + 
+  stat_compare_means(aes(group = country), label = "p.format", label.y = 4, label.x.npc = 0.33) +
+  theme(plot.title = element_text(hjust = 0.5, face="bold")) + theme(text=element_text(size=14)) + theme_grey() 
+
+#ggsave("~/Desktop/ASD/PDFS/Log_fold_change_plots/Order_country_plot.pdf", plot = Order_country_plot, width = 8, height = 6, device = "pdf")
+```
+
+
+# Supplemental Figure 8
+```{r}
+# Remove cohort from Ecuador 
+Genus_no_zurtia <- subset(Genus, Study!="zurita")
+
+# Convert to long format
+melted_Genus_no_zurtia <- melt(Genus_no_zurtia,id.vars=c('Study','seq_depth_range','Control_relation','country','Variable_region'), measure.vars=c('g__Faecalibacterium', 'g__Bifidobacterium','g__Sutterella','g__Phascolarctobacterium','g__Bilophila',
+  'g__Parabacteroides','g__Streptococcus','g__Veillonella','g__Bacteroides','g__Alistipes','g__Turicibacter',
+  'g__Eggerthella','g__Ruminococcus','g__Blautia','g__Prevotella','g__Dialister','g__Oxalobacter', 'g__Haemophilus',
+  'g__Akkermansia','g__Oscillospira','g__Clostridium','g__Paraprevotella','g__Butyricimonas','g__Odoribacter',
+  'g__Collinsella','Prevotella/Bacteroides'))
+
+
+melted_genus_country_plot <- ggboxplot(melted_Genus_no_zurtia, "country", "value", facet.by = "variable", ylab = "Log2FoldcChange(ASD/TD)", bxp.errorbar = TRUE, outlier.shape = NA, size = 0.3) + 
+  geom_point(data = melted_Genus_no_zurtia, 
+             aes(x = country, y = value, colour = Study, group = country), size = 1.5, stroke = 0, shape = 16, 
+             position=position_jitterdodge(jitter.width = 0.2, jitter.height = 0)) +
+  scale_color_manual(values = c("#00AFBB", "#1F78B4", "#33A02C", "#B2DF8A", "#2F4F4F", "#FB9A99", "#E31A1C", 
+                                "#FDBF6F", "#FF7F00", "#CAB2D6", "#6A3D9A", "#B15928","#293352")) +
+  theme(plot.title = element_text(hjust = 0.1)) +
+  theme(axis.text.x = element_text(angle = 10, hjust=1, size = 8)) + 
+  stat_compare_means(aes(group = country), label = "p.format", label.y = 8, label.x.npc = 0.33) +
+  theme(plot.title = element_text(hjust = 0.5, face="bold")) + theme_grey() 
+
+#ggsave("~/Desktop/ASD/PDFS/Log_fold_change_plots/melted_genus_country_plot.pdf", plot = melted_genus_country_plot, width = 20, height = 15, device = "pdf")
+```
+
+
+# Supplemental Figure 9
+```{r}
+Phyla_Control_relation_plot <- ggboxplot(melted_Phyla, "Control_relation", "value", facet.by = "variable", ylab = "Log2FoldcChange(ASD/TD)", bxp.errorbar = TRUE, outlier.shape = NA, size = 0.3) + 
+  geom_point(data = melted_Phyla, 
+             aes(x = Control_relation, y = value, colour = Study, group = Control_relation), size = 2, stroke = 0, shape = 16, 
+             position=position_jitterdodge(jitter.width = 0.2, jitter.height = 0)) +
+  scale_color_manual(values = c("#B15928", "#00AFBB", "#1F78B4", "#B2DF8A", "#33A02C", "#FB9A99", "#E31A1C", 
+                                "#FDBF6F", "#FF7F00", "#CAB2D6", "#6A3D9A", "#FFFF99", "deeppink", "#293352")) +
+  theme(plot.title = element_text(hjust = 0.1)) +
+  theme(axis.text.x = element_text(angle = 10, hjust=1, size = 8)) + 
+  stat_compare_means(aes(group = Control_relation), label = "p.format", label.y = 3, label.x.npc = 0.33) +
+  theme(plot.title = element_text(hjust = 0.5, face="bold")) + theme(text=element_text(size=12)) + theme_grey() 
+
+#ggsave("~/Desktop/ASD/PDFS/Log_fold_change_plots/Phyla_Control_relation_plot.pdf", plot = Phyla_Control_relation_plot, width = 10, height = 8, device = "pdf")
+```
+
+
+# Supplemental Figure 10
+```{r}
+Class_control_relation_plot <- ggboxplot(melted_Class, "Control_relation", "value", facet.by = "variable", ylab = "Log2FoldcChange(ASD/TD)", bxp.errorbar = TRUE, outlier.shape = NA, size = 0.3) + 
+  geom_point(data = melted_Class, 
+             aes(x = Control_relation, y = value, colour = Study, group = Control_relation), size = 2, stroke = 0, shape = 16, 
+             position=position_jitterdodge(jitter.width = 0.2, jitter.height = 0)) +
+  scale_color_manual(values = c("#B15928", "#00AFBB", "#1F78B4", "#B2DF8A", "#33A02C", "#FB9A99", "#E31A1C", 
+                                "#FDBF6F", "#FF7F00", "#CAB2D6", "#6A3D9A", "#FFFF99", "deeppink", "#293352")) +
+  theme(plot.title = element_text(hjust = 0.1)) +
+  theme(axis.text.x = element_text(angle = 10, hjust=1)) + 
+  stat_compare_means(aes(group = Control_relation), label = "p.format", label.y = 4, label.x.npc = 0.33) +
+  theme(plot.title = element_text(hjust = 0.5, face="bold")) + theme(text=element_text(size=14)) + theme_grey() 
+
+#ggsave("~/Desktop/ASD/PDFS/Log_fold_change_plots/Class_control_relation_plot.pdf", plot = Class_control_relation_plot, width = 8, height = 6, device = "pdf")
+```
+
+
+# Supplemental Figure 11
+```{r}
+Order_control_relation_plot <- ggboxplot(melted_Order, "Control_relation", "value", facet.by = "variable", ylab = "Log2FoldcChange(ASD/TD)", bxp.errorbar = TRUE, outlier.shape = NA, size = 0.3) + 
+  geom_point(data = melted_Order, 
+             aes(x = Control_relation, y = value, colour = Study, group = Control_relation), size = 2, stroke = 0, shape = 16, 
+             position=position_jitterdodge(jitter.width = 0.2, jitter.height = 0)) +
+  scale_color_manual(values = c("#B15928", "#00AFBB", "#1F78B4", "#B2DF8A", "#33A02C", "#FB9A99", "#E31A1C", 
+                                "#FDBF6F", "#FF7F00", "#CAB2D6", "#6A3D9A", "#FFFF99", "deeppink", "#293352")) +
+  theme(plot.title = element_text(hjust = 0.1)) +
+  theme(axis.text.x = element_text(angle = 10, hjust=1)) + 
+  stat_compare_means(aes(group = Control_relation), label = "p.format", label.y = 4, label.x.npc = 0.33) +
+  theme(plot.title = element_text(hjust = 0.5, face="bold")) + theme(text=element_text(size=14)) + theme_grey() 
+
+#ggsave("~/Desktop/ASD/PDFS/Log_fold_change_plots/Order_control_relation_plot.pdf", plot = Order_control_relation_plot, width = 8, height = 6, device = "pdf")
+```
+
+
+# Supplemental Figure 12
+```{r}
+melted_genus_Control_relation_plot <- ggboxplot(melted_Genus, "Control_relation", "value", facet.by = "variable", ylab = "Log2FoldcChange(ASD/TD)", bxp.errorbar = TRUE, outlier.shape = NA, size = 0.3) + 
+  geom_point(data = melted_Genus, 
+             aes(x = Control_relation, y = value, colour = Study, group = Control_relation), size = 1.5, stroke = 0, shape = 16, 
+             position=position_jitterdodge(jitter.width = 0.2, jitter.height = 0)) +
+  scale_color_manual(values = c("#B15928", "#00AFBB", "#1F78B4", "#B2DF8A", "#33A02C", "#FB9A99", "#E31A1C", 
+                                "#FDBF6F", "#FF7F00", "#CAB2D6", "#6A3D9A", "#FFFF99", "deeppink", "#293352")) +
+  theme(plot.title = element_text(hjust = 0.1)) +
+  theme(axis.text.x = element_text(angle = 10, hjust=1, size = 8)) + 
+  stat_compare_means(aes(group = Control_relation), label = "p.format", label.y = 8, label.x.npc = 0.33) +
+  theme(plot.title = element_text(hjust = 0.5, face="bold")) + theme_grey() 
+
+#ggsave("~/Desktop/ASD/PDFS/Log_fold_change_plots/melted_genus_Control_relation_plot.pdf", plot = melted_genus_Control_relation_plot, width = 20, height = 15, device = "pdf")
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

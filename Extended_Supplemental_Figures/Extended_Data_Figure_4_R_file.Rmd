@@ -1,0 +1,157 @@
+---
+title: "Extended_Data_Figures"
+author: "Aries Chavira"
+date: "1/11/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# This file contains all the code to plot each pannel in Extended Data 4
+
+### Load necessary packages 
+```{r}
+library(tidyverse)
+library(ggrepel)
+library(gcookbook)
+library("RColorBrewer")
+library(reshape2)
+library("wesanderson")
+library("ggpubr")
+library(rstatix)
+library(gridExtra)
+library(viridis)
+library("hrbrthemes")
+library(extrafont)
+library(plyr)
+library(ggplot2)
+```
+
+
+# Plot Extended Data Figure 4a
+```{r}
+# Load data
+Firmicutes_Bacteroidetes <- read_delim("~/Desktop/ASD/all/Finalized_notebooks_for_github/Firmicutes_Bacteroidetes_3.txt", "\t", escape_double = FALSE, trim_ws = TRUE)
+
+Firmicutes_Bacteroidetes_asd_cont <- ggplot(Firmicutes_Bacteroidetes, aes(x=Status, y=log10_value)) + 
+  geom_boxplot(outlier.shape = NA, alpha = 0.4) + stat_boxplot(geom ='errorbar') +
+  geom_point(data = Firmicutes_Bacteroidetes,
+             aes(x = Status, y = log10_value, colour = Study), size = 1.5, stroke = 0, shape = 16, 
+             position=position_jitterdodge(jitter.width = 0.3, jitter.height = 0)) +
+  scale_fill_manual(values = c("#FF7F00","#BCB4AD")) +
+  scale_color_manual(values = c("#741b47", "#1F78B4", "#B2DF8A", "#33A02C", "#2F4F4F", "#E31A1C", "#B15928",
+                                "#FDBF6F", "#FF7F00", "#00AFBB", "#6A3D9A", "#293352", "#FB9A99", "#FB9A10", "#CAB2D6")) + 
+  labs(title = "Difference in the Ratio of Firmicutes/Bacteroidetes between ASD and Controls",
+    x = "Status",
+    y = "Log10(%relative abundance)") +
+  theme(plot.title = element_text(size = 14, hjust = 1.4)) +
+  stat_compare_means(aes(group = Status), label = "p.format", label.y = 4, label.x = 1.4) + theme_grey() 
+```
+
+### Most significant class plot Extended Data Figure 4b
+```{r}
+most_sig_class <- read_delim("~/Desktop/ASD/all/Finalized_notebooks_for_github/Class_sig.txt", "\t", escape_double = FALSE, trim_ws = TRUE)
+shape_size_taxa = c(3, 4.5)
+
+Sig_class <- ggplot(most_sig_class) +
+  geom_point( aes(x=Class, y=`Log2(ASD/Control)`, group="Class", fill=Cohort_y ,size=Significant), colour="black",pch=21) + coord_flip()+
+ scale_size_manual(values=shape_size_taxa) + 
+  scale_fill_manual(values=c("#741b47", "#1F78B4", "#B2DF8A", "#33A02C", "#2F4F4F", "#E31A1C", "#B15928",
+                              "#FDBF6F", "#FF7F00", "#00AFBB", "#6A3D9A", "#293352", "#FB9A99", "#FB9A10", "#CAB2D6")) +
+  labs(title = "Most Significant Class") + theme(plot.title = element_text(hjust = 0.5)) + theme(text=element_text(size=12)) +
+  xlab("Class") +
+  ylab("Log2(ASD/Control)") 
+```
+
+
+### Most significant order plot Extended Data Figure 4c
+```{r}
+most_sig_order <- read_delim("~/Desktop/ASD/all/Finalized_notebooks_for_github/order_sig.txt", "\t", escape_double = FALSE, trim_ws = TRUE)
+
+Sig_Order <- ggplot(most_sig_order) +
+  geom_point( aes(x=Order, y=`Log2(ASD/Control)`, group="Order", fill=Cohort_y ,size=Significant), colour="black",pch=21) + coord_flip()+
+ scale_size_manual(values=shape_size_taxa) + coord_flip()+
+  scale_fill_manual(values=c("#741b47", "#1F78B4", "#B2DF8A", "#33A02C", "#2F4F4F", "#E31A1C", "#B15928",
+                              "#FDBF6F", "#FF7F00", "#00AFBB", "#6A3D9A", "#293352", "#FB9A99", "#FB9A10", "#CAB2D6")) +
+  labs(title = "Most Significant Order") + theme(plot.title = element_text(hjust = 0.5)) + theme(text=element_text(size=12)) +
+  xlab("Order") +
+  ylab("Log2(ASD/Control)") 
+```
+
+
+### Bubble plot for Extended Data Figure 4d
+```{r}
+# Load data
+new_df_only_quinols = read_delim("~/Desktop/ASD/all/Finalized_notebooks_for_github/Pathways_quinol_for_bubble_map.txt","\t", escape_double = FALSE, trim_ws = TRUE)
+
+# Remove eraneous pathways 
+new_df_only_quinols <- subset(new_df_only_quinols, Pathways!="2-heptyl-3-hydroxy-4(1H)-quinolone biosynthesis")
+new_df_only_quinols_2 <- subset(new_df_only_quinols, Pathways!="superpathway of quinolone and alkylquinolone biosynthesis")
+
+# Define plotting order
+new_df_only_quinols_2$Cohort = factor(new_df_only_quinols_2$Cohort , levels=c("zou", "huang","berding","chen","fouquier", "kang", "liu", "son", "zurita", "amgut_bloom_filt", "david", "kong","cao", "dan", "aggregate", "v3v4", "v4"))
+
+# Define size of point for significant and non significant values
+shape_size = c(2.5, 4.5)
+
+only_quinols_plot <- ggplot(new_df_only_quinols_2, aes(x = Cohort, y = Pathways)) + 
+      geom_point( aes(size=Significant, fill=`Log2(ASD/Control)`), colour="black",pch=21) + 
+      scale_fill_gradientn(colours = c("blue", "white", "red"),values = scales::rescale(c(-4, -2, 0, 0.5, 1))) +
+      scale_size_manual(values=shape_size) + theme(axis.text.x = element_text(angle = 90, hjust=1))
+#ggsave("~/Desktop/ASD/PDFS/only_quinols_bubble_plot.pdf", plot = only_quinols_plot, width = 9, height = 6 , device = cairo_pdf)
+```
+
+
+### Bubble plot for Extended Data Figure 4e
+```{r}
+# Load data
+chorismate_pathways_for_bubble_plot = read_delim("~/Desktop/ASD/all/Finalized_notebooks_for_github/chorismate_all_pathways_df_2.txt","\t", escape_double = FALSE, trim_ws = TRUE)
+
+# Define plotting order
+chorismate_pathways_for_bubble_plot$Pathways = factor(chorismate_pathways_for_bubble_plot$Pathways , 
+                levels=c("L-glutamate and L-glutamine biosynthesis",
+                         "superpathway of L-tryptophan biosynthesis",
+                         "L-tryptophan biosynthesis",
+                         "superpathway of L-tyrosine biosynthesis",
+                         "superpathway of L-phenylalanine biosynthesis", 
+                         "L-glutamate degradation VIII (to propanoate)", 
+                         "L-glutamate degradation V (via hydroxyglutarate)", 
+                         "L-tyrosine degradation I", 
+                         "adenosylcobalamin biosynthesis I (early cobalt insertion)", 
+                         "adenosylcobalamin biosynthesis from cobyrinate a,c-diamide I", 
+                         "adenosylcobalamin biosynthesis II (late cobalt incorporation)",
+                         "adenosylcobalamin salvage from cobinamide I", 
+                         "adenosylcobalamin salvage from cobinamide II",
+                         "superpathway of tetrahydrofolate biosynthesis and salvage",
+                         "superpathway of tetrahydrofolate biosynthesis",
+                         "N10-formyl-tetrahydrofolate biosynthesis",
+                         "NAD biosynthesis II (from tryptophan)",
+                         "enterobactin biosynthesis", 
+                         "superpathway of chorismate metabolism","chorismate biosynthesis I", 
+                         "chorismate biosynthesis from 3-dehydroquinate"))
+
+chorismate_pathways_for_bubble_plot_plot <- ggplot(chorismate_pathways_for_bubble_plot, aes(x = Cohort, y = Pathways)) + 
+      geom_point( aes(size=Significant, fill=`Log2(ASD/Control)`), colour="black",pch=21) + 
+      scale_fill_gradientn(colours = c("blue", "white", "red"), values = scales::rescale(c(-5, -1.5, -0.5, 0.5, 5))) +
+      scale_size_manual(values=shape_size) + theme(axis.text.x = element_text(angle = 90, hjust=1))
+#ggsave("~/Desktop/ASD/PDFS/chorismate_pathways_for_bubble_plot_plot.pdf", plot = chorismate_pathways_for_bubble_plot_plot, width = 8.5, height = 6 , device = cairo_pdf)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
